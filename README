@@ -1,0 +1,7 @@
+See https://commons-cat-path.toolforge.org
+
+This is a tool to get the path from a specific category
+to a specific file.
+
+Its meant as an API to power the https://commons.wikimedia.org/wiki/User:Bawolff/catpath.js
+user script
