@@ -113,9 +113,9 @@ function doApi() {
 		// Try going low depth first, then expand a bit
 		// using hidden cats slow things down, so only try on low depth.
 		$res = getResults( $db, $file, $cat, 5, false, $limit );
-		if ( $res->num_rows === 0 ) $res = getResults( $db, $file, $cat, 5, true, $limit );
-		if ( $res->num_rows === 0 ) $res = getResults( $db, $file, $cat, 9, false, $limit );
-		if ( $res->num_rows === 0 ) $res = getResults( $db, $file, $cat, 13, false, $limit );
+		if ( $res->num_rows === 0 && !checkBusy( $db, 5 ) ) $res = getResults( $db, $file, $cat, 5, true, $limit );
+		if ( $res->num_rows === 0 && !checkBusy( $db, 3 ) ) $res = getResults( $db, $file, $cat, 9, false, $limit );
+		if ( $res->num_rows === 0 && !checkBusy( $db, 1 ) ) $res = getResults( $db, $file, $cat, 13, false, $limit );
 	}
 	$json = [];
 	$i = 0;
@@ -128,8 +128,18 @@ function doApi() {
 		$json[$i] = array_reverse( $json[$i] );
 		$i++;
 	}
-header( 'Content-Type: text/json; charset=UTF-8' );
-echo json_encode( $json, JSON_UNESCAPED_UNICODE );
+	header( 'Content-Type: text/json; charset=UTF-8' );
+	echo json_encode( $json, JSON_UNESCAPED_UNICODE );
+}
+
+// The idea being that if there are a lot of concurrent requests
+// don't look as deep into category tree
+function checkBusy( $db, $n ) {
+	static $threads = 0;
+	if ( $threads > $n ) return true;
+	$threads = $db->query( 'SHOW PROCESSLIST' )->num_rows;
+	if ( $threads > $n ) return true;
+	return false;
 }
 
 // It would probably be more efficient to use blazegraph, but oh well.
