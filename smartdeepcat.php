@@ -42,7 +42,7 @@ function doWeb() {
 	echo '<!doctype html><html><head><title>Smart deepcat prototype</title></head><body>';
 	echo '<h1>Commons smart deepcategory</h1>';
 	echo '<p>This is a prototype of doing deepcategory but smarter to exclude some common category names that often give poor results. This is just a prototype to validate the idea. This will only do up to 100 subcategories, where the real deepcategory will do up to 5000.</p>';
-	echo '<p><form action="/smartdeepcat.php" method="GET">Category.<input type="text" name="cat"><br><input type="submit" name="Search"></form>.';
+	echo '<p><form action="/smartdeepcat.php" method="GET"><label for="cat">Category:</lbel> <input id="cat" type="text" name="cat"><br><input type="submit" name="Search"></form>';
 	echo '<p><a href="?source=1">View source</a></p>';
 }
 
@@ -113,7 +113,7 @@ function doSearch() {
 	$i = 0;
 	$url = 'https://commons.wikimedia.org/w/index.php?title=Special:MediaSearch&search=incategory:';
 	foreach( $res as $row ) {
-		$url = $url . 'id:' . $row['id'] . '%7c';
+		$url = $url . 'id:' . $row['page_id'] . '%7c';
 	}
 	$url = substr( $url, 0, -3 );
 	header( 'Location: '. $url );
@@ -127,7 +127,7 @@ function doSearch() {
 function getResults( $db, $targetCat, $depth ) {
 	$db->query( 'SET max_statement_time = 100' );
 	// incategory: is limited to 100 categories. Core's deepcategory does 5000.
-	$stmt = $db->prepare( "with recursive cats as ( select page_id, 0 as 'n' from page where page_namespace=14 and page_title = ? union all select cl_from, cats.n+1 as 'n' from categorylinks inner join linktarget on lt_id = cl_target_id  inner join page on lt_namespace = page_namespace and lt_title = page_title inner join cats on cats.page_id =page.page_id where cl_type = 'subcat' and n < ? ) select page_id from cats group by page_id order by min(n), page_id limit 100" );
+	$stmt = $db->prepare( "with recursive cats as ( select page_id, 0 as 'n' from page where page_namespace=14 and page_title = ? union all select cl_from as 'page_id', cats.n+1 as 'n' from categorylinks inner join linktarget on lt_id = cl_target_id  inner join page on lt_namespace = page_namespace and lt_title = page_title inner join cats on cats.page_id =page.page_id where cl_type = 'subcat' and n < ? ) select page_id from cats group by page_id order by min(n), page_id limit 100" );
 
 	$stmt->bind_param( "si", $targetCat, $depth ) or die( "Could not bind" );
 	$stmt->execute() or die( $stmt->error );
