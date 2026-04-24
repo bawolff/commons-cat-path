@@ -1,4 +1,5 @@
 <?php
+// WIP. This doesn't do anything useful yet.
 
 /*
 MIT License
