@@ -104,6 +104,7 @@ function getExcludedSQL( $db, $cats ) {
 		return "'" . $db->real_escape_string( $cat ) . "'";
 	}, $catList );
 	$res = $db->query( 'SELECT page_id from page where page_namespace = 14 and page_title in (' . implode( ',', $catList ) . ');');
+error_log( 'SELECT page_id from page where page_namespace = 14 and page_title in (' . implode( ',', $catList ) . ');');
 	if ( $res->num_rows < 1 ) {
 		return '';
 	}
@@ -131,7 +132,7 @@ function doSearch() {
 	}
 
 	$excludedCats = getExcludedSQL( $db, $_GET['exclude'] ?? '' );
-	error_log( $excludedCats );
+	error_log( "excluded cats= " . $excludedCats );
 	$res = getResults( $db, $cat, $excludedCats );
 
 	if ( $res->num_rows === 0 ) {
