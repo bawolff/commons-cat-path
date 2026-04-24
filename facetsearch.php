@@ -103,7 +103,7 @@ function getExcludedSQL( $db, $cats ) {
 		$cat = mb_convert_case( $cat, MB_CASE_TITLE, 'UTF-8' );
 		return $db->real_escape_string( $cat );
 	}, $catList );
-	$res = $db->query( 'SELECT page_id from page where page_namespace = 14 and page_title in (' . implode( ',', $catList ) . ');'
+	$res = $db->query( 'SELECT page_id from page where page_namespace = 14 and page_title in (' . implode( ',', $catList ) . ');');
 	if ( $res->num_rows < 1 ) {
 		return '';
 	}
