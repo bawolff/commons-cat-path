@@ -131,7 +131,7 @@ function doSearch() {
 	}
 
 	$excludedCats = getExcludedSQL( $db, $_GET['exclude'] ?? '' );
-	error_log( $excludedCat );
+	error_log( $excludedCats );
 	$res = getResults( $db, $cat, $excludedCats );
 
 	if ( $res->num_rows === 0 ) {
