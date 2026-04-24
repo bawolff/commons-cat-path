@@ -85,6 +85,35 @@ function getCategoryName( $db, $cat ) {
 	return false;
 }
 
+/**
+ * Get page ids from list of categories.
+ * @param $db DB handle
+ * @param string $cats pipe separated list of categories
+ * @return string SQL for use in where clause
+ */
+function getExcludedSQL( $db, $cats ) {
+	if ( $cats === '' ) {
+		return '';
+	}
+
+	$catList = explode( '|', $cats );
+	$catList = array_map( function ( $cat ) {
+		$cat = trim( $cat );
+		$cat = str_replace(' ', '_', $cat );
+		$cat = mb_convert_case( $cat, MB_CASE_TITLE, 'UTF-8' );
+		return $db->real_escape_string( $cat );
+	}, $catList );
+	$res = $db->query( 'SELECT page_id from page where page_namespace = 14 and page_title in (' . implode( ',', $catList ) . ');'
+	if ( $res->num_rows < 1 ) {
+		return '';
+	}
+	$excluded = [];
+	foreach( $res as $row ) {
+		$excluded[] = (int)$row->page_id;
+	}
+	return ' AND cl_from not IN (' . implode( ',', $excluded ) . ') '; 
+}
+
 function doSearch() {
 	$db = getDB();
 	$cat = str_replace(' ', '_', $_GET['cat'] ?? '' );
@@ -101,7 +130,7 @@ function doSearch() {
 		return;
 	}
 
-	$excludedCats = '';
+	$excludedCats = getExcludedSQL( $_GET['exclude'] ?? '' );
 
 	$res = getResults( $db, $cat, $excludedCats );
 
@@ -131,7 +160,7 @@ function doSearch() {
 // MariaDB optimizer is kind of terrible at optimizing these types of queries
 function getResults( $db, $targetCat, $excludedCats ) {
 	$db->query( 'SET max_statement_time = 200' );
-	$stmt = $db->prepare( "with recursive cats as ( select page_id, 0 as 'n', 0 as 'parent' from page  where page_namespace=14 and page_title = ? union  select cl_from as 'page_id', cats.n+1 as 'n', p1.page_id as 'parent' from categorylinks inner join linktarget on lt_id = cl_target_id  inner join page p1 on lt_namespace = p1.page_namespace and lt_title = p1.page_title inner join cats on cats.page_id = p1.page_id  where cl_type = 'subcat' $excludedCats and n < 5 ), fourth as ( select sum(c1.cat_files)+c2.cat_files 'files', parent from cats inner join page p1 on p1.page_id = cats.page_id left join category c1 on c1.cat_title = page_title inner join page p2 on p2.page_id = cats.parent left join category c2 on c2.cat_title = p2.page_title where n = 5 group by parent  ), third as ( select sum(coalesce(fourth.files, c1.cat_files))+c2.cat_files 'files', cats.parent from  cats left join fourth on cats.page_id = fourth.parent and cats.n=4 inner join page p1 on p1.page_id = cats.page_id left join category c1 on c1.cat_title = page_title inner join page p2 on p2.page_id = cats.parent left join category c2 on c2.cat_title = p2.page_title where n= 4 group by cats.parent ), second as ( select sum(coalesce(third.files, c1.cat_files))+c2.cat_files 'files', cats.parent from  cats left join third on cats.page_id = third.parent and cats.n=3 inner join page p1 on p1.page_id = cats.page_id left join category c1 on c1.cat_title = page_title inner join page p2 on p2.page_id = cats.parent left join category c2 on c2.cat_title = p2.page_title where n= 3 group by cats.parent ), first as ( select sum(coalesce(second.files, c1.cat_files))+c2.cat_files 'files', cats.parent from  cats left join second on cats.page_id = second.parent and cats.n=2 inner join page p1 on p1.page_id = cats.page_id left join category c1 on c1.cat_title = page_title inner join page p2 on p2.page_id = cats.parent left join category c2 on c2.cat_title = p2.page_title where n= 2 group by cats.parent ) select page_title, max(files) as 'files', max(cl_target_id) as 'wikidata' from  ((select  parent, max(files) 'files' from first group by 1 order by files desc limit 100 ) union all ( select parent,max(files) from second group by 1 order by files desc limit 300 ) union all ( select parent,max(files) from third group by 1 order by files desc limit 100 ) union all ( select  parent,max(files) from fourth group by 1 order by files desc limit 100 ) order by files desc) as res inner join page on page_id = res.parent left join categorylinks on res.parent = cl_from and cl_target_id = 9701451 group by res.parent order by 2 desc limit 100\G" );
+	$stmt = $db->prepare( "with recursive cats as ( select page_id, 0 as 'n', 0 as 'parent' from page  where page_namespace=14 and page_title = ? union  select cl_from as 'page_id', cats.n+1 as 'n', p1.page_id as 'parent' from categorylinks inner join linktarget on lt_id = cl_target_id  inner join page p1 on lt_namespace = p1.page_namespace and lt_title = p1.page_title inner join cats on cats.page_id = p1.page_id  where cl_type = 'subcat' $excludedCats and n < 5 ), fourth as ( select sum(c1.cat_files)+c2.cat_files 'files', parent from cats inner join page p1 on p1.page_id = cats.page_id left join category c1 on c1.cat_title = page_title inner join page p2 on p2.page_id = cats.parent left join category c2 on c2.cat_title = p2.page_title where n = 5 group by parent  ), third as ( select sum(coalesce(fourth.files, c1.cat_files))+c2.cat_files 'files', cats.parent from  cats left join fourth on cats.page_id = fourth.parent and cats.n=4 inner join page p1 on p1.page_id = cats.page_id left join category c1 on c1.cat_title = page_title inner join page p2 on p2.page_id = cats.parent left join category c2 on c2.cat_title = p2.page_title where n= 4 group by cats.parent ), second as ( select sum(coalesce(third.files, c1.cat_files))+c2.cat_files 'files', cats.parent from  cats left join third on cats.page_id = third.parent and cats.n=3 inner join page p1 on p1.page_id = cats.page_id left join category c1 on c1.cat_title = page_title inner join page p2 on p2.page_id = cats.parent left join category c2 on c2.cat_title = p2.page_title where n= 3 group by cats.parent ), first as ( select sum(coalesce(second.files, c1.cat_files))+c2.cat_files 'files', cats.parent from  cats left join second on cats.page_id = second.parent and cats.n=2 inner join page p1 on p1.page_id = cats.page_id left join category c1 on c1.cat_title = page_title inner join page p2 on p2.page_id = cats.parent left join category c2 on c2.cat_title = p2.page_title where n= 2 group by cats.parent ) select page_title, max(files) as 'files', max(cl_target_id) as 'wikidata' from  ((select  parent, max(files) 'files' from first group by 1 order by files desc limit 100 ) union all ( select parent,max(files) from second group by 1 order by files desc limit 300 ) union all ( select parent,max(files) from third group by 1 order by files desc limit 100 ) union all ( select  parent,max(files) from fourth group by 1 order by files desc limit 100 ) order by files desc) as res inner join page on page_id = res.parent left join categorylinks on res.parent = cl_from and cl_target_id = 9701451 group by res.parent order by 2 desc limit 100" );
 
 	$stmt->bind_param( "s", $targetCat ) or die( "Could not bind" );
 	$stmt->execute() or die( $stmt->error );
