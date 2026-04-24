@@ -145,9 +145,9 @@ function doSearch() {
 	$url = 'https://commons.wikimedia.org/w/index.php?title=Special:MediaSearch&search=incategory:';
 	foreach( $res as $row ) {
 		$json[] = [
-			'title' => $row->page_title,
-			'files' => $row->files,
-			'wikidata' => (bool)$row->wikidata
+			'title' => $row['page_title'],
+			'files' => $row['files'],
+			'wikidata' => (bool)$row['wikidata']
 		];
 	}
 	header( 'content-type: application/json' );
