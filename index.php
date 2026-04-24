@@ -72,7 +72,7 @@ function getCategoryName( $db, $cat ) {
 	if ( $res->num_rows !== 0 ) {
 		return $cat;
 	}
-	$cat = mb_convert_case( $cat, MB_CASE_TITLE, 'UTF-8' );
+	$cat = mb_ucfirst( $cat, 'UTF-8' );
 	if ( $cat !== $oldCat ) {
 		$stmt->execute() or die( $stmt->error );
 		$res = $stmt->get_result();

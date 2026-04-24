@@ -74,7 +74,7 @@ function getCategoryName( $db, $cat ) {
 	if ( $res->num_rows !== 0 ) {
 		return $cat;
 	}
-	$cat = mb_convert_case( $cat, MB_CASE_TITLE, 'UTF-8' );
+	$cat = mb_ucfirst( $cat, 'UTF-8' );
 	if ( $cat !== $oldCat ) {
 		$stmt->execute() or die( $stmt->error );
 		$res = $stmt->get_result();
@@ -100,7 +100,7 @@ function getExcludedSQL( $db, $cats ) {
 	$catList = array_map( function ( $cat ) use ( $db ) {
 		$cat = trim( $cat );
 		$cat = str_replace(' ', '_', $cat );
-		$cat = mb_convert_case( $cat, MB_CASE_TITLE, 'UTF-8' );
+		$cat = mb_ucfirst( $cat, 'UTF-8' );
 		return "'" . $db->real_escape_string( $cat ) . "'";
 	}, $catList );
 	$res = $db->query( 'SELECT page_id from page where page_namespace = 14 and page_title in (' . implode( ',', $catList ) . ');');
