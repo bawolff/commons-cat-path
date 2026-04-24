@@ -130,7 +130,7 @@ function doSearch() {
 		return;
 	}
 
-	$excludedCats = getExcludedSQL( $_GET['exclude'] ?? '' );
+	$excludedCats = getExcludedSQL( $db, $_GET['exclude'] ?? '' );
 
 	$res = getResults( $db, $cat, $excludedCats );
 
