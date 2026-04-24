@@ -97,7 +97,7 @@ function getExcludedSQL( $db, $cats ) {
 	}
 
 	$catList = explode( '|', $cats );
-	$catList = array_map( function ( $cat ) {
+	$catList = array_map( function ( $cat ) use ( $db ) {
 		$cat = trim( $cat );
 		$cat = str_replace(' ', '_', $cat );
 		$cat = mb_convert_case( $cat, MB_CASE_TITLE, 'UTF-8' );
