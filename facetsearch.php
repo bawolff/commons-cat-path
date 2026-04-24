@@ -110,7 +110,7 @@ error_log( 'SELECT page_id from page where page_namespace = 14 and page_title in
 	}
 	$excluded = [];
 	foreach( $res as $row ) {
-		$excluded[] = (int)$row->page_id;
+		$excluded[] = (int)$row['page_id'];
 	}
 	return ' AND cl_from not IN (' . implode( ',', $excluded ) . ') '; 
 }
