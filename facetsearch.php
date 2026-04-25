@@ -167,7 +167,7 @@ function getResults( $db, $targetCat, $excludedCats ) {
 	if ( $res->num_rows === 0 ) {
 		// Query doesn't work if cat has no sub-sub cats.
 		// FIXME the wikidata part of this query is broken
-		$stmt2->prepare( "select page_title, cat_files, null as 'wikidata' from categorylinks inner join linktarget on cl_target_id =  lt_id inner join page  on cl_from = page_id inner join category on page_title = cat_title where lt_namespace = 14 and lt_title = ? and cl_type = 'subcat';" );
+		$stmt2 = $db->prepare( "select page_title, cat_files, null as 'wikidata' from categorylinks inner join linktarget on cl_target_id =  lt_id inner join page  on cl_from = page_id inner join category on page_title = cat_title where lt_namespace = 14 and lt_title = ? and cl_type = 'subcat';" );
 		$stmt2->bind_param( "s", $targetCat );
 		$stmt2->execute() or die( $stmt->error );
 		return $stmt2->get_result();
