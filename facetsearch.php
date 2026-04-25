@@ -44,7 +44,7 @@ function doWeb() {
 	echo '<!doctype html><html><head><title>deepcat facet prototype</title></head><body>';
 	echo '<h1>Commons deepcategory facet</h1>';
 	echo '<p>This is a prototype of doing faceted search over commons category tree. This returns potential search facets 5 categories deep.</p>';
-	echo '<p><form action="/facetsearch.php" method="GET"><label for="cat">Category:</lbel> <input id="cat" type="text" name="cat"><br><input type="submit" name="Search"></form>';
+	echo '<p><form action="/facetsearch.php" method="GET"><label for="cat">Category:</lbel> <input id="cat" type="text" name="cat"><br> Cats to exclude (separate with |): <input name="exclude"><br><input type="submit" name="Search"></form>';
 	echo '<p><a href="?source=1">View source</a></p>';
 }
 
