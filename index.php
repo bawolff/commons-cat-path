@@ -48,7 +48,7 @@ function doWeb() {
 
 function getDB() {
     $connection = new mysqli(
-        'commonswiki.web.db.svc.wikimedia.cloud',
+        'links.commonswiki.web.db.svc.wikimedia.cloud',
         getenv( 'TOOL_REPLICA_USER' ),
         getenv( 'TOOL_REPLICA_PASSWORD' ),
         'commonswiki_p'
@@ -112,10 +112,10 @@ function doApi() {
 	} else {
 		// Try going low depth first, then expand a bit
 		// using hidden cats slow things down, so only try on low depth.
-		$res = getResults( $db, $file, $cat, 5, false, $limit );
-		if ( $res->num_rows === 0 && !checkBusy( $db, 5 ) ) $res = getResults( $db, $file, $cat, 5, true, $limit );
-		if ( $res->num_rows === 0 && !checkBusy( $db, 3 ) ) $res = getResults( $db, $file, $cat, 9, false, $limit );
-		if ( $res->num_rows === 0 && !checkBusy( $db, 1 ) ) $res = getResults( $db, $file, $cat, 13, false, $limit );
+		// EDIT: disable filtering hidden due to link table split
+		$res = getResults( $db, $file, $cat, 5, true, $limit );
+		if ( $res->num_rows === 0 && !checkBusy( $db, 3 ) ) $res = getResults( $db, $file, $cat, 9, true, $limit );
+		if ( $res->num_rows === 0 && !checkBusy( $db, 1 ) ) $res = getResults( $db, $file, $cat, 13, true, $limit );
 	}
 	$json = [];
 	$i = 0;

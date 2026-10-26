@@ -50,7 +50,7 @@ function doWeb() {
 
 function getDB() {
     $connection = new mysqli(
-        'commonswiki.web.db.svc.wikimedia.cloud',
+        'links.commonswiki.web.db.svc.wikimedia.cloud',
         getenv( 'TOOL_REPLICA_USER' ),
         getenv( 'TOOL_REPLICA_PASSWORD' ),
         'commonswiki_p'
